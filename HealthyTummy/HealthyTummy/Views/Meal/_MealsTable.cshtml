@@ -6,43 +6,63 @@
         data-url="@Url.Action("Index")">
         <thead>
             <tr>
-                <th scope="col">Meals List</th>
+                <th>Meals List</th>
             </tr>
         </thead>
         <tbody>
-            @if(Model.Count() == 0)
+            @if (Model.Count() == 0)
             {
                 <tr>
-                <td colspan="4">No meals added yet. Please add at least one to show.</td>
+                    <td>No meals added yet. Please add at least one to show.</td>
                 </tr>
             }
-            else { 
+            else
+            {
                 @foreach (var meal in Model)
                 {
-                    <tr>@meal.Name</tr>
-                    <tr>Products List</tr>
-                    <tr>
+                    <tr class="border" style="width:100%">
                         <td>
-                            <ul class="list-group">
-                                <li class="list-group-item">@meal.Products</li>
-                            </ul>
+                            <div class="container">
+
+                                <div class="row font-weight-bold border-bottom">
+                                    <label class="text-strong">@meal.Name</label>
+                                </div>
+
+                                <label for="productsList">Products List</label>
+                                <div class="row border-bottom" id="productsList">
+                                    @if (meal.Products.Count() != 0)
+                                    {
+
+                                        <ul class="list-group">
+                                            @foreach (var product in meal.Products)
+                                            {
+                                                <li class="list-group-item border">@product.Product.ProductDetails</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-justify">No products added to meal yet. Please add some.</p>
+                                    }
+                                </div>
+
+                                <div class="row">
+                                    <div class="col">
+                                        <button type="button" class="btn btn-primary" data-toggle="ajax-modal" data-target="#editMeal"
+                                                data-url="@Html.Raw(Url.Action("Edit", "Product", new { id = @meal.Id }))">
+                                            Edit
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                        <button type="button" class="btn btn-danger" data-toggle="ajax-modal" data-target="#deleteMeal"
+                                                data-url="@Html.Raw(Url.Action("Delete", "Product", new { id = @meal.Id }))">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
-
-                     <tr>
-                        <td class="col">
-                            <button type="button" class="btn btn-primary" data-toggle="ajax-modal" data-target="#editMeal"
-                                    data-url="@Html.Raw(Url.Action("Edit", "Product", new { id = @meal.Id }))">
-                                Edit
-                            </button>
-                        </td>
-                        <td class="col">
-                            <button type="button" class="btn btn-danger" data-toggle="ajax-modal" data-target="#deleteMeal"
-                                    data-url="@Html.Raw(Url.Action("Delete", "Product", new { id = @meal.Id }))">
-                                Delete
-                            </button>
-                        </td>
-                     </tr>
                 }
             }
         </tbody>

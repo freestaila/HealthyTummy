@@ -16,7 +16,8 @@ namespace HealthyTummy.Data
         }
         public DbSet<Product> Products { get; set; }
         public DbSet<Meal> Meals { get; set; }
-      //  public DbSet<MealProducts> MealProducts { get; set; }
+        
+        public DbSet<MealProducts> MealProducts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

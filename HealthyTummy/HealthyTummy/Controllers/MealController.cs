@@ -7,6 +7,7 @@ using HealthyTummy.Models;
 using HealthyTummy.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace HealthyTummy.Controllers
 {
@@ -22,7 +23,26 @@ namespace HealthyTummy.Controllers
         }
         public IActionResult Index()
         {
-            IEnumerable<Meal> mealsList = _db.Meals;    
+            IEnumerable<Meal> mealsList = _db.Meals
+                       .Include(p => p.Products)
+                       .ToList();
+            //dla kazdego posilku
+            foreach(var meal in mealsList)
+            {
+                //pobierz liste produktow dla wybranego posilku
+                List<Product> mealProducts = _mealProductService.GetMealProductsList(meal.Id);
+                //dla kazdego produktu przypisz wartosci pobrane z listy produktow
+                foreach(var product in meal.Products)
+                {
+                    //wybieram product z listy produktow wedlug jego id
+                    Product productData = mealProducts.Find(id=> id.Id == product.ProdutcId);
+                    //przypisuje wszystkie pobrane dane produktu do naszego obiektu w kolekcji produktow
+                    product.Product.Id = productData.Id;
+                    product.Product.Name = productData.Name;
+                    product.Product.CaloriesPerUnit = productData.CaloriesPerUnit;
+                    product.Product.UnitType = productData.UnitType;
+                }
+            }
             var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
             if (isAjax)
             {
@@ -37,37 +57,30 @@ namespace HealthyTummy.Controllers
         {
             Meal newMeal = new();
             ViewBag.ProductsList = _mealProductService.GetProductList();
-            //var mealProducts = _mealProductService.GetProductList();
-            //newMeal.Products = new List<MealProducts>();
-            //foreach (var product in mealProducts)
-            //{
-            //   newMeal.Products.Add(new MealProducts
-            //   {
-            //      Product = product
-            //   });
-            //}
             return PartialView("_AddEditMeal", newMeal);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Meal newMeal)
+        public IActionResult Create(MealProductsVM mealVM)
         {
+            Meal newMeal = new Meal();
             if (ModelState.IsValid)
             {
-                newMeal.Calories = CalculateMealCalories(newMeal);
-                if (newMeal.Products.Count != 0)
-                {
-                    foreach (var productId in newMeal.Products)
-                    {
-                        MealProducts newMealProducts = new ();
-                        newMealProducts.MealId = newMeal.Id;
-                        newMealProducts.ProdutcId = productId.ProdutcId;
-                    }
-                }
+                newMeal.Name = mealVM.Name;
                 _db.Meals.Add(newMeal);
+                _db.SaveChanges();
+
+                foreach(var product in mealVM.Products)
+                {
+                    MealProducts mealProducts = new MealProducts();
+                    mealProducts.MealId = newMeal.Id;
+                    mealProducts.ProdutcId =int.Parse(product);
+                    _db.MealProducts.Add(mealProducts);
+                }
+                _db.SaveChanges();
                 CreateNotification("Meal saved!");
             }
-            _db.SaveChanges();
+            ViewBag.ProductsList = _mealProductService.GetMealProductsList(newMeal.Id);
             return PartialView("_AddEditMeal", newMeal);
         }
         #endregion
@@ -119,6 +132,7 @@ namespace HealthyTummy.Controllers
             return PartialView("_DeleteMealPartial", mealToDelete);
         }
         #endregion
+
         [NonAction]
         private static int CalculateMealCalories(Meal meal)
         {
@@ -129,5 +143,4 @@ namespace HealthyTummy.Controllers
             return meal.Calories;
         }
     }
-
 }

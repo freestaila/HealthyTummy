@@ -21,36 +21,35 @@ $(function () {
         var actionUrl = form.attr('action');
         var dataToSend = new FormData(form.get(0));
 
-            $.ajax({ url: actionUrl, method: 'post', data: dataToSend, processData: false, contentType: false }).done(function (data) {
-                var newBody = $('.modal-body', data);
-                placeholderElement.find('.modal-body').replaceWith(newBody);
-                //tutaj sprawdzimy czy przekazalismy cos do naszego ciala jezeli nie to znaczy ze mamy delete i musimy po prostu zamknac naszego modala
-                // i odswierzyc tablice
-                var isValid = newBody.find('[name="IsValid"]').val() === 'True';
-                if (actionUrl.includes("Delete")) {
-                    isValid = "True";
-                }
-                if (isValid) {
-                    var notificationsPlaceholder = $('#notification');
-                    var notificationsUrl = notificationsPlaceholder.data('url');
-                    $.get(notificationsUrl).done(function (notifications) {
-                        notificationsPlaceholder.html(notifications);
-                    });
+        $.ajax({ url: actionUrl, method: 'post', data: dataToSend, processData: false, contentType: false }).done(function (data) {
+            var newBody = $('.modal-body', data);   
+            placeholderElement.find('.modal-body').replaceWith(newBody);
+            //choose correct table 
+            var isValid = newBody.find('[name="IsValid"]').val() === 'True';
+            if (actionUrl.includes("Delete")) {
+                isValid = "True";
+            }
+            if (isValid) {
+                var notificationsPlaceholder = $('#notification');
+                var notificationsUrl = notificationsPlaceholder.data('url');
+                $.get(notificationsUrl).done(function (notifications) {
+                    notificationsPlaceholder.html(notifications);
+                });
 
-                    //to troche brzydko ale dziala 
-                    var tableName = actionUrl.split('/')[1];
-                    if (tableName == "Meal") {
-                        var tableElement = $('#meals');
-                    }
-                    else {
-                        var tableElement = $('#products');
-                    }
-                    var tableUrl = tableElement.data('url');
-                    $.get(tableUrl).done(function (table) {
-                        tableElement.replaceWith(table);
-                    });
-                    placeholderElement.find('.modal').modal('hide');
+                //to troche brzydko ale dziala 
+                var tableName = actionUrl.split('/')[1];
+                if (tableName == "Meal") {
+                    var tableElement = $('#meals');
                 }
-            });
+                else {
+                    var tableElement = $('#products');
+                }
+                var tableUrl = tableElement.data('url');
+                $.get(tableUrl).done(function (table) {
+                    tableElement.replaceWith(table);
+                });
+                placeholderElement.find('.modal').modal('hide');
+            }
+        });
     });
 });

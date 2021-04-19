@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,5 +17,8 @@ namespace HealthyTummy.Models
         [Required]
         public int CaloriesPerUnit { get; set; }
         public ICollection<MealProducts> Meals { get; set; }
+
+        [NotMapped]
+        public string ProductDetails => $"{Name}{" "}{CaloriesPerUnit}{"/"}{UnitType}";
     }
 }

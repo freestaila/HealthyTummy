@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "bootstrap-multiselect@0.9.16",
+      "destination": "wwwroot/lib/bootstrap-multiselect/",
+      "files": [
+        "js/bootstrap-multiselect.min.js",
+        "css/bootstrap-multiselect.css",
+        "css/bootstrap-multiselect.min.css",
+        "js/bootstrap-multiselect.js"
+      ]
+    }
+  ]
+}
