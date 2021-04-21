@@ -33,7 +33,7 @@ namespace HealthyTummy.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            Product newProduct = new Product();
+            Product newProduct = new();
             return PartialView("_AddEditProduct", newProduct);
         }
         [HttpPost]

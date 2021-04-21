@@ -34,15 +34,21 @@
                                 <label for="productsList">Choose meal products</label>
                                 @if (ViewBag.ProductsList.Count != 0)
                                 {
-                                    <select id="productsList" 
-                                            multiple="multiple" asp-for="Products"
-                                            asp-items="@(
-                                                new SelectList(
-                                                ViewBag.ProductsList,
-                                                nameof(Product.Id),
-                                                nameof(Product.ProductDetails)
-                                                ))"
-                                            class="form-control">
+                                    <select id="productsList" multiple="multiple" asp-for="Products" class="form-control">
+                                    @if (ViewBag.ProductsList != null)
+                                    {
+                                        foreach (var product in ViewBag.ProductsList)
+                                        {
+                                            if (product.Assigned)
+                                            {
+                                                <option value="@product.Id" selected>@product.ProductDetails</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@product.Id">@product.ProductDetails</option>
+                                            }
+                                        }
+                                    }
                                     </select>
                                 }
                                 else

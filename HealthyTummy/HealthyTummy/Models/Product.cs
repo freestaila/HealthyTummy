@@ -20,5 +20,7 @@ namespace HealthyTummy.Models
 
         [NotMapped]
         public string ProductDetails => $"{Name}{" "}{CaloriesPerUnit}{"/"}{UnitType}";
+        [NotMapped]
+        public bool Assigned { get; set; }
     }
 }

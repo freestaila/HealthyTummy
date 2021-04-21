@@ -23,26 +23,13 @@ namespace HealthyTummy.Controllers
         }
         public IActionResult Index()
         {
+            //pobieram ienumerable
             IEnumerable<Meal> mealsList = _db.Meals
                        .Include(p => p.Products)
                        .ToList();
-            //dla kazdego posilku
-            foreach(var meal in mealsList)
-            {
-                //pobierz liste produktow dla wybranego posilku
-                List<Product> mealProducts = _mealProductService.GetMealProductsList(meal.Id);
-                //dla kazdego produktu przypisz wartosci pobrane z listy produktow
-                foreach(var product in meal.Products)
-                {
-                    //wybieram product z listy produktow wedlug jego id
-                    Product productData = mealProducts.Find(id=> id.Id == product.ProdutcId);
-                    //przypisuje wszystkie pobrane dane produktu do naszego obiektu w kolekcji produktow
-                    product.Product.Id = productData.Id;
-                    product.Product.Name = productData.Name;
-                    product.Product.CaloriesPerUnit = productData.CaloriesPerUnit;
-                    product.Product.UnitType = productData.UnitType;
-                }
-            }
+
+            _mealProductService.GetMealsProductsDetails(mealsList);
+
             var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
             if (isAjax)
             {
@@ -63,21 +50,17 @@ namespace HealthyTummy.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(MealProductsVM mealVM)
         {
-            Meal newMeal = new Meal();
+            Meal newMeal = new ();
+
             if (ModelState.IsValid)
             {
                 newMeal.Name = mealVM.Name;
+                newMeal.Calories= _mealProductService.CalculateMealCalories(mealVM.Products);
                 _db.Meals.Add(newMeal);
                 _db.SaveChanges();
 
-                foreach(var product in mealVM.Products)
-                {
-                    MealProducts mealProducts = new MealProducts();
-                    mealProducts.MealId = newMeal.Id;
-                    mealProducts.ProdutcId =int.Parse(product);
-                    _db.MealProducts.Add(mealProducts);
-                }
-                _db.SaveChanges();
+                _mealProductService.AddMealProductsToDatabase(newMeal.Id, mealVM.Products);
+
                 CreateNotification("Meal saved!");
             }
             ViewBag.ProductsList = _mealProductService.GetMealProductsList(newMeal.Id);
@@ -94,18 +77,28 @@ namespace HealthyTummy.Controllers
             {
                 return NotFound();
             }
+            ViewBag.ProductsList = _mealProductService.GetProductsListWithAssignedProducts(id);
             return PartialView("_AddEditMeal", mealToEdit);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Meal editedMeal)
+        public IActionResult Edit(Meal editedMeal, string[] Products)
         {
             Meal mealToEdit = _db.Meals.Find(editedMeal.Id);
-            mealToEdit.Name = editedMeal.Name;
-            mealToEdit.Products = editedMeal.Products;
-            mealToEdit.Calories = CalculateMealCalories(editedMeal);
-            _db.SaveChanges();
-            CreateNotification("Meal changed!");
+
+            if (ModelState.IsValid)
+            {
+                mealToEdit.Name = editedMeal.Name;
+                mealToEdit.Calories = _mealProductService.CalculateMealCalories(Products);
+
+                _db.SaveChanges();
+
+                _mealProductService.AddMealProductsToDatabase(editedMeal.Id, Products);
+
+                CreateNotification("Meal changed!");
+            }
+
+            ViewBag.ProductsList = _mealProductService.GetMealProductsList(editedMeal.Id);
             return PartialView("_AddEditMeal", editedMeal);
         }
         #endregion
@@ -125,22 +118,12 @@ namespace HealthyTummy.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Delete(Meal mealToDelete)
         {
-
+            _mealProductService.RemoveMealProductsFromDb(mealToDelete.Id);
             _db.Meals.Remove(mealToDelete);
             CreateNotification("Meal deleted!");
             _db.SaveChanges();
             return PartialView("_DeleteMealPartial", mealToDelete);
         }
         #endregion
-
-        [NonAction]
-        private static int CalculateMealCalories(Meal meal)
-        {
-            foreach (var productForMeal in meal.Products)
-            {
-                meal.Calories += productForMeal.Product.CaloriesPerUnit;
-            }
-            return meal.Calories;
-        }
     }
 }
