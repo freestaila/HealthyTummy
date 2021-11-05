@@ -1,21 +1,21 @@
-﻿using System;
+﻿using HealthyTummy.Data;
+using HealthyTummy.Models;
+using HealthyTummy.Services;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using HealthyTummy.Data;
-using HealthyTummy.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace HealthyTummy.Controllers
 {
     public class ProductController : NotificationsController
     {
         private readonly ApplicationDbContext _db;
+        private readonly IProductService _productService;
 
-        public ProductController(ApplicationDbContext db)
+        public ProductController(ApplicationDbContext db, IProductService productSerivce)
         {
             _db = db;
+            _productService = productSerivce;
         }
 
         public IActionResult Index()
@@ -34,6 +34,7 @@ namespace HealthyTummy.Controllers
         public IActionResult Create()
         {
             Product newProduct = new();
+            newProduct.ActionType = true;
             return PartialView("_AddEditProduct", newProduct);
         }
         [HttpPost]
@@ -42,10 +43,10 @@ namespace HealthyTummy.Controllers
         {
             if (ModelState.IsValid)
             {
-                _db.Products.Add(newProduct);
+                _productService.AddProductToDatabase(newProduct);
                 CreateNotification("Product saved!");
             }
-            _db.SaveChanges();
+            newProduct.ActionType = true;
             return PartialView("_AddEditProduct", newProduct);
         }
         #endregion
@@ -54,24 +55,24 @@ namespace HealthyTummy.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            // int id = int.Parse(this.RouteData.Values["id"].ToString());
             var productToEdit = _db.Products.Where(x => x.Id == id).FirstOrDefault();
+            productToEdit.ActionType = false;
             if (productToEdit == null)
             {
                 return NotFound();
             }
+
             return PartialView("_AddEditProduct", productToEdit);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Product editedProduct)
         {
-            Product productToEdit = _db.Products.Find(editedProduct.Id);
-            productToEdit.Name = editedProduct.Name;
-            productToEdit.UnitType = editedProduct.UnitType;
-            productToEdit.CaloriesPerUnit = editedProduct.CaloriesPerUnit;
-            _db.SaveChanges();
-            CreateNotification("Product changed!");
+            if (ModelState.IsValid)
+            {
+                _productService.EditProductInDB(editedProduct);
+                CreateNotification("Product changed!");
+            }
             return PartialView("_AddEditProduct", editedProduct);
         }
         #endregion
@@ -92,9 +93,8 @@ namespace HealthyTummy.Controllers
         public IActionResult Delete(Product productToDelete)
         {
 
-            _db.Products.Remove(productToDelete);
-            CreateNotification("Product deleted!");
-            _db.SaveChanges();
+            _productService.RemoveProductFromDB(productToDelete);
+            CreateNotification("Product deleted!"); 
             return PartialView("_DeleteProductPartial",productToDelete);
         }
         #endregion

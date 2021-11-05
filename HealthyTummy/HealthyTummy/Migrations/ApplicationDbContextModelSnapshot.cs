@@ -18,6 +18,77 @@ namespace HealthyTummy.Migrations
                 .HasAnnotation("ProductVersion", "5.0.5")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("HealthyTummy.Models.Day", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("Calories")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Days");
+                });
+
+            modelBuilder.Entity("HealthyTummy.Models.DayMeals", b =>
+                {
+                    b.Property<int>("DayId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MealId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Hour")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Minutes")
+                        .HasColumnType("int");
+
+                    b.HasKey("DayId", "MealId");
+
+                    b.HasIndex("MealId");
+
+                    b.ToTable("DayMeals");
+                });
+
+            modelBuilder.Entity("HealthyTummy.Models.DietPlan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DietPlans");
+                });
+
+            modelBuilder.Entity("HealthyTummy.Models.DietPlanDays", b =>
+                {
+                    b.Property<int>("DietPlanId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DayId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DietPlanId", "DayId");
+
+                    b.HasIndex("DayId");
+
+                    b.ToTable("DietPlanDays");
+                });
+
             modelBuilder.Entity("HealthyTummy.Models.Meal", b =>
                 {
                     b.Property<int>("Id")
@@ -42,12 +113,12 @@ namespace HealthyTummy.Migrations
                     b.Property<int>("MealId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProdutcId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.HasKey("MealId", "ProdutcId");
+                    b.HasKey("MealId", "ProductId");
 
-                    b.HasIndex("ProdutcId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("MealProducts");
                 });
@@ -74,6 +145,44 @@ namespace HealthyTummy.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("HealthyTummy.Models.DayMeals", b =>
+                {
+                    b.HasOne("HealthyTummy.Models.Day", "Day")
+                        .WithMany("Meals")
+                        .HasForeignKey("DayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthyTummy.Models.Meal", "Meal")
+                        .WithMany("Days")
+                        .HasForeignKey("MealId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Day");
+
+                    b.Navigation("Meal");
+                });
+
+            modelBuilder.Entity("HealthyTummy.Models.DietPlanDays", b =>
+                {
+                    b.HasOne("HealthyTummy.Models.Day", "Day")
+                        .WithMany("DietPlans")
+                        .HasForeignKey("DayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthyTummy.Models.DietPlan", "DietPlan")
+                        .WithMany("Days")
+                        .HasForeignKey("DietPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Day");
+
+                    b.Navigation("DietPlan");
+                });
+
             modelBuilder.Entity("HealthyTummy.Models.MealProducts", b =>
                 {
                     b.HasOne("HealthyTummy.Models.Meal", "Meal")
@@ -84,7 +193,7 @@ namespace HealthyTummy.Migrations
 
                     b.HasOne("HealthyTummy.Models.Product", "Product")
                         .WithMany("Meals")
-                        .HasForeignKey("ProdutcId")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -93,8 +202,22 @@ namespace HealthyTummy.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("HealthyTummy.Models.Day", b =>
+                {
+                    b.Navigation("DietPlans");
+
+                    b.Navigation("Meals");
+                });
+
+            modelBuilder.Entity("HealthyTummy.Models.DietPlan", b =>
+                {
+                    b.Navigation("Days");
+                });
+
             modelBuilder.Entity("HealthyTummy.Models.Meal", b =>
                 {
+                    b.Navigation("Days");
+
                     b.Navigation("Products");
                 });
 

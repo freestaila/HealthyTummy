@@ -1,0 +1,34 @@
+﻿@model HealthyTummy.Models.Day
+
+<div class="modal fade" id="deleteDay" tabindex="-1" role="dialog" aria-labelledby="deleteDayLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="deleteDayLabel">Delete Day</h4>
+            </div>
+            <div class="modal-body">
+                    <div class="form-group">
+                            <div class="container">
+                                <p class="text-center text-danger">Are you sure about delete this day?</p>
+                                <p class="text-center font-weight-bold">@Model.Name</p>
+                            </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <div class="container text-center">
+                    <div class="row">
+                        <div class="col">
+                            <form asp-action="Delete">
+                                <input type="hidden" asp-for="Id" />
+                                <input type="submit" value="Delete" class="btn btn-danger mr-auto" data-save="modal" />
+                            </form>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

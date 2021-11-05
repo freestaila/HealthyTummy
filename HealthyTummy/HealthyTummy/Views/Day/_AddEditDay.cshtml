@@ -1,0 +1,99 @@
+﻿ @model HealthyTummy.Models.Day
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#mealsList').multiselect();
+    });
+</script>
+
+<div class="modal fade" id="addEditDay" tabindex="-1" role="dialog" aria-labelledby="addEditDayLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                @{
+                    var headerType = Model.ActionType == true ? "Add Day" : "Edit Day";
+                    var actionType = headerType == "Add Day" ? "Create" : "Edit";
+                }
+                <h4 class="modal-title" id="addEditDayLabel">@headerType</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form asp-action="@actionType">
+                    <input name="IsValid" type="hidden" value="@ViewData.ModelState.IsValid.ToString()" />
+                    <div class="form-group">
+                        <div class="row">
+                            <label asp-for="Name"></label>
+                            <input asp-for="Name" class="form-control" placeholder="Enter Day name">
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="mealsList">Choose day meals</label>
+                                @if (ViewBag.MealsList.Count != 0)
+                                {
+                                    <select id="mealsList" multiple="multiple" asp-for="Meals" class="form-control">
+                                        @if (ViewBag.MealsList != null)
+                                        {
+                                            foreach (var meal in ViewBag.MealsList)
+                                            {
+                                                if (meal.Assigned)
+                                                {
+                                                    <option value="@meal.Id" selected>
+                                                        @meal.MealDetails
+                                                    </option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@meal.Id">@meal.MealDetails</option>
+                                                }
+                                            }
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <label>No meals added yet</label>
+                                }
+
+                                @*
+                                    SO HERE IS THE PROBLEM WITH MULTISELECT\
+                                    CUSTROM MULTISELECT PROVIDES NO VALUES TO CONTROLLER
+                                    BUT I CANT USE OUR TIME SELECT STUFF BECAUSE ITS NOT WORKING
+
+
+
+                                    <input type="text" class="bs-timepicker" />
+                                    
+                                    
+                                    
+                                    *@
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+
+                <div class="container">
+                    <div class="row text-center">
+                        <div class="col">
+                            <button type="button" class="btn btn-primary" data-save="modal">Submit</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HealthyTummy.Models;
+﻿using HealthyTummy.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthyTummy.Dal.Configurations
@@ -12,7 +8,7 @@ namespace HealthyTummy.Dal.Configurations
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<MealProducts> builder)
         {
             builder
-                .HasKey(mp => new { mp.MealId, mp.ProdutcId });
+                .HasKey(mp => new { mp.MealId, mp.ProductId });
             builder
                 .HasOne(mp => mp.Meal)
                 .WithMany(mp => mp.Products)
@@ -20,7 +16,7 @@ namespace HealthyTummy.Dal.Configurations
             builder
                 .HasOne(mp => mp.Product)
                 .WithMany(mp => mp.Meals)
-                .HasForeignKey(mp => mp.ProdutcId);
+                .HasForeignKey(mp => mp.ProductId);
         }
     }
 }

@@ -1,0 +1,92 @@
+﻿@model IEnumerable<Day>
+
+<table id="days"
+        class="table table-bordered w-auto"
+        style="table-layout: fixed; width:100%;"
+        data-url="@Url.Action("Index")">
+    <tbody>
+
+        @if (Model.Count() == 0)
+        {
+            <tr>
+                <td class="text-justify text-wrap">No days added yet. Please add at least one to show.</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var day in Model)
+            {
+                <tr>
+                    <th class="font-weight-bold" colspan="3">@day.Name</th>
+                </tr>
+                <tr>
+                    <td colspan="3">Meals List</td>
+                </tr>
+                @if (day.Meals.Count() != 0)
+                {
+                    <tr>
+                        <td>Name</td>
+                        <td>Calories</td>
+                        <td>Meal time</td>
+                    </tr>
+
+                    @foreach (var meal in day.Meals)
+                    {
+                        <tr>
+                            <td>@meal.Meal.Name</td>
+                            <td>@meal.Meal.Calories</td>
+                            <td colspan="2">
+
+                                @if (meal.Hour != 0 && meal.Minutes != 0)
+                                {
+                                    <div class="col">
+                                        @meal.Hour:@meal.Minutes
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col">
+                                        Edit meal to set time
+                                    </div>
+                                }
+                                
+                                </tr>
+                    }
+                    <tr>
+                        <td>Calories</td>
+                        <td>@day.Calories</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3">
+                            <div class="row">
+                                <div class="col">
+                                    No meals added to day yet. Please add some.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+
+                <tr>
+                    <td colspan="3">
+                        <div class="row">
+                            <button type="button" class="btn btn-primary mx-auto" data-toggle="ajax-modal" data-target="#editDay"
+                                    data-url="@Html.Raw(Url.Action("Edit", "Day", new { id = day.Id }))">
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-danger mx-auto" data-toggle="ajax-modal" data-target="#deleteDay"
+                                    data-url="@Html.Raw(Url.Action("Delete", "Day", new { id = day.Id }))">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+
+        }
+    </tbody>
+</table>

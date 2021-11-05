@@ -1,7 +1,9 @@
 ﻿@model HealthyTummy.Models.Meal
 
 <script type="text/javascript">
-    $('#productsList').multiselect();
+    $(document).ready(function () {
+        $('#productsList').multiselect();
+    });
 </script>
 
 <div class="modal fade" id="addEditMeal" tabindex="-1" role="dialog" aria-labelledby="addEditMealLabel" aria-hidden="true">
@@ -10,7 +12,8 @@
 
             <div class="modal-header">
                 @{
-                    var headerType = Model.Name == null ? "Add Meal" : "Edit Meal";
+                    //if editing the meal and remove name create action is set need to be edit!
+                    var headerType = Model.ActionType == true ? "Add Meal" : "Edit Meal";
                     var actionType = headerType == "Add Meal" ? "Create" : "Edit";
                 }
                 <h4 class="modal-title" id="addEditMealLabel">@headerType</h4>
@@ -23,18 +26,18 @@
                 <form asp-action="@actionType">
                     <input name="IsValid" type="hidden" value="@ViewData.ModelState.IsValid.ToString()" />
                     <div class="form-group">
-                        <div class="row">
+                        <div class="col">
                             <label asp-for="Name"></label>
                             <input asp-for="Name" class="form-control" placeholder="Enter Meal name">
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
                         <br />
-                        <div class="row">
-                            <div class="form-group">
-                                <label for="productsList">Choose meal products</label>
-                                @if (ViewBag.ProductsList.Count != 0)
-                                {
-                                    <select id="productsList" multiple="multiple" asp-for="Products" class="form-control">
+                        @if (ViewBag.ProductsList.Count != 0)
+                        {
+                            <label>Choose meal products</label>
+
+                            <div class="col">
+                                <select id="productsList" multiple="multiple"  asp-for="Products" class="form-control">
                                     @if (ViewBag.ProductsList != null)
                                     {
                                         foreach (var product in ViewBag.ProductsList)
@@ -49,20 +52,19 @@
                                             }
                                         }
                                     }
-                                    </select>
-                                }
-                                else
-                                {
-                                    <label>No products added yet</label>
-                                }
+                                </select>
                             </div>
-                        </div>
+                        }
+                        else
+                        {
+                            <div class="row">
+                                <label>No products added yet</label>
+                            </div>
+                        }
                     </div>
                 </form>
             </div>
-
             <div class="modal-footer">
-
                 <div class="container">
                     <div class="row text-center">
                         <div class="col">
@@ -73,9 +75,7 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-

@@ -1,0 +1,83 @@
+﻿@model HealthyTummy.Models.DietPlan
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#daysList').multiselect();
+    });
+</script>
+
+<div class="modal fade" id="addEditDietPlan" tabindex="-1" role="dialog" aria-labelledby="addEditDietPlanLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                @{
+                    var headerType = Model.ActionType == true ? "Add DietPlan" : "Edit DietPlan";
+                    var actionType = headerType == "Add DietPlan" ? "Create" : "Edit";
+                }
+                <h4 class="modal-title" id="addEditDietPlanLabel">@headerType</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form asp-action="@actionType">
+                    <input name="IsValid" type="hidden" value="@ViewData.ModelState.IsValid.ToString()" />
+                    <div class="form-group">
+                        <div class="row">
+                            <label asp-for="Name"></label>
+                            <input asp-for="Name" class="form-control" placeholder="Enter DietPlan name">
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="daysList">Choose diet plan days</label>
+                                @if (ViewBag.DaysList.Count != 0)
+                                {
+                                    <select id="daysList" multiple="multiple" asp-for="Days" class="form-control">
+                                    @if (ViewBag.DaysList != null)
+                                    {
+                                        foreach (var day in ViewBag.DaysList)
+                                        {
+                                            if (day.Assigned)
+                                            {
+                                                <option value="@day.Id" selected>@day.DayDetails</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@day.Id">@day.DayDetails</option>
+                                            }
+                                        }
+                                    }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <label>No days added yet</label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+
+                <div class="container">
+                    <div class="row text-center">
+                        <div class="col">
+                            <button type="button" class="btn btn-primary" data-save="modal">Submit</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

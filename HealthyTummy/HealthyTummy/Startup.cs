@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HealthyTummy.Data;
 using HealthyTummy.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +25,10 @@ namespace HealthyTummy
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
             );
             services.AddTransient<IMealProductService, MealProductService>();
+            services.AddTransient<IDayMealsService, DayMealsService>();
+            services.AddTransient<IMealService, MealService>();
+            services.AddTransient<IProductService, ProductService>();
+            services.AddTransient<IDietPlanDaysService, DietPlanDaysService>();
             services.AddControllersWithViews();
         }
 

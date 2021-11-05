@@ -25,12 +25,12 @@ namespace HealthyTummy.Services
         public List<Product> GetMealProductsList(int mealId)
         {
             var productsList = (from product in _db.Products
-                                join mealProducts in _db.MealProducts on product.Id equals mealProducts.ProdutcId
+                                join mealProducts in _db.MealProducts on product.Id equals mealProducts.ProductId
                                 where mealProducts.MealId == mealId
                                 select product).ToList();
             return productsList;
         }
-        public List<Product> GetProductsListWithAssignedProducts(int mealId)
+        public List<Product> GetProductsListWithMealProductsChecked(int mealId)
         { 
             List<Product> productsList = GetProductList();
             List<Product> assignedProductsList = GetMealProductsList(mealId);
@@ -48,16 +48,14 @@ namespace HealthyTummy.Services
             }
             return productsList;
         }
-
         public IEnumerable<Meal> GetMealsProductsDetails(IEnumerable<Meal> mealsList)
         {
-
             foreach (var meal in mealsList)
             {
                 List<Product> mealProducts = GetMealProductsList(meal.Id);
                 foreach (var product in meal.Products)
                 {
-                    Product productData = mealProducts.Find(id => id.Id == product.ProdutcId);
+                    Product productData = mealProducts.Find(id => id.Id == product.ProductId);
                     product.Product.Id = productData.Id;
                     product.Product.Name = productData.Name;
                     product.Product.CaloriesPerUnit = productData.CaloriesPerUnit;
@@ -70,51 +68,47 @@ namespace HealthyTummy.Services
         public int CalculateMealCalories(string[] productsList)
         {
             int mealCalories = 0;
-
-            foreach (var productForMeal in productsList)
+            if (productsList != null)
             {
-                Product newProduct = _db.Products.First(x => x.Id ==  int.Parse(productForMeal));
+                foreach (var productForMeal in productsList)
+                {
+                    Product newProduct = _db.Products.First(x => x.Id == int.Parse(productForMeal));
 
-                mealCalories += newProduct.CaloriesPerUnit;
+                    mealCalories += newProduct.CaloriesPerUnit;
+                }
             }
             return mealCalories;
         }
 
         public void AddMealProductsToDatabase(int mealId, string[] productsIdsList)
         {
-            //Najpierw sprawdzam czy nasz posilek byl juz wczesniej stworzony lub czy posiadał jakies produkty
+            //checl if meal was created befor or have any products
             if (_db.MealProducts.Any(id => id.MealId == mealId))
             {
-                //pobieram liste produktow dla danego posilku
-                
+                //get meal products list
                 var mealProducts = _db.MealProducts.Where(id => id.MealId == mealId);
 
-                //mamy posilek ktory edytujemy lub mial jakies produkty przypisane
-                //mam nowa liste produktow
-                if (productsIdsList.Count() != 0)
+                //meal was created or have products assigned OR new products list need to be assigned
+                if (productsIdsList != null || productsIdsList.Length != 0)
                 {
-                    //teraz musze usunac wszystkie rekordy ktore nie sa na naszej nowej liscie a sa w bazie danych
+                    //remove records not on list but they are on db
                     foreach(var mealProduct in mealProducts)
                     {
-                        //jezeli nasza nowa lista nie zawiera obecnego w bazie id produktu to usuwam ten rekord
-                        if (!productsIdsList.Contains(mealProduct.ProdutcId.ToString()))
+                        //if new list dont have product in db remove it
+                        if (!productsIdsList.Contains(mealProduct.ProductId.ToString()))
                         {
                             _db.MealProducts.Remove(mealProduct);
                         }
-                    }
-                    //musimy dodac nowe produkty do bazy jezeli nie bylo ich wczesniej
-                    foreach(var id in productsIdsList)
-                    {
-                        if(!mealProducts.Any(mp=> mp.ProdutcId == int.Parse(id)))
+                        //remove products from new list if they already are in db
+                        else
                         {
-                            MealProducts newMealProducts = new();
-                            newMealProducts.MealId = mealId;
-                            newMealProducts.ProdutcId = int.Parse(id);
-                            _db.MealProducts.Add(newMealProducts);
+                            productsIdsList = productsIdsList.Where(e => e != mealProduct.ProductId.ToString()).ToArray();
                         }
                     }
+                    //add new products to db
+                    AddMealProductToDb(mealId, productsIdsList);
                 }
-                //usuwam wszystkie rekordy dla danego posilku bo wszystkei odznaczylem
+                //remove all products because list is empty
                 else
                 {
                     foreach(var mealProduct in mealProducts)
@@ -124,27 +118,25 @@ namespace HealthyTummy.Services
                 }
                 _db.SaveChanges();
             }
-            //mam albo nowy posilek, albo nie mial wczesniej zadnych produktow
+            //new meal without any products yet
             else
             {
-                //oczywiscie sprawdzam czy mamy jakies produkty do dodania 
-                if (productsIdsList.Count() != 0)
-                {
-                    foreach (var product in productsIdsList)
-                    {
-                        MealProducts mealProducts = new();
-                        mealProducts.MealId = mealId;
-                        mealProducts.ProdutcId = int.Parse(product);
-                        _db.MealProducts.Add(mealProducts);
-                    }
-                    _db.SaveChanges();
-                }
+                AddMealProductToDb(mealId,productsIdsList);
             }
         }
-
-        public void RemoveMealProductsFromDb(int mealId)
+        private void AddMealProductToDb(int mealId, string[] productsIdsList)
         {
-            
+            if (productsIdsList != null)
+            {
+                foreach (var product in productsIdsList)
+                {
+                    MealProducts mealProducts = new();
+                    mealProducts.MealId = mealId;
+                    mealProducts.ProductId = int.Parse(product);
+                    _db.MealProducts.Add(mealProducts);
+                }
+                _db.SaveChanges();
+            }
         }
     }
 }

@@ -16,12 +16,16 @@ namespace HealthyTummy.Data
         }
         public DbSet<Product> Products { get; set; }
         public DbSet<Meal> Meals { get; set; }
-        
+        public DbSet<Day> Days { get; set; }
+        public DbSet<DietPlan> DietPlans { get; set; }
         public DbSet<MealProducts> MealProducts { get; set; }
-
+        public DbSet<DayMeals> DayMeals { get; set; }
+        public DbSet<DietPlanDays> DietPlanDays { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfiguration(new MealProductConfiguration());
+            builder.ApplyConfiguration(new DayMealsConfiguration());
+            builder.ApplyConfiguration(new DietPlanDaysConfiguration());
         }
     }
 }

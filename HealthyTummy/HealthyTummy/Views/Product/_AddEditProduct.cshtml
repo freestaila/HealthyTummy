@@ -6,7 +6,7 @@
 
             <div class="modal-header">
                 @{ 
-                    var headerType = Model.Name == null ? "Add Product" : "Edit Product";
+                    var headerType = Model.ActionType == true ? "Add Product" : "Edit Product";
                     var actionType = headerType == "Add Product" ? "Create" : "Edit";
                 }
                 <h4 class="modal-title" id="addEditProductLabel">@headerType</h4>

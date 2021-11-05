@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HealthyTummy.Data;
+﻿using HealthyTummy.Data;
 using HealthyTummy.Models;
 using HealthyTummy.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HealthyTummy.Controllers
 {
@@ -15,21 +13,17 @@ namespace HealthyTummy.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IMealProductService _mealProductService;
+        private readonly IMealService _mealService;
 
-        public MealController(ApplicationDbContext db, IMealProductService mealProductService)
+        public MealController(ApplicationDbContext db, IMealProductService mealProductService, IMealService mealService)
         {
             _db = db;
-            _mealProductService = mealProductService;
+            _mealProductService= mealProductService;
+            _mealService = mealService;
         }
         public IActionResult Index()
         {
-            //pobieram ienumerable
-            IEnumerable<Meal> mealsList = _db.Meals
-                       .Include(p => p.Products)
-                       .ToList();
-
-            _mealProductService.GetMealsProductsDetails(mealsList);
-
+            IEnumerable<Meal> mealsList = _mealProductService.GetMealsProductsDetails(_mealService.GetMealsListFromDB());
             var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
             if (isAjax)
             {
@@ -42,7 +36,8 @@ namespace HealthyTummy.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            Meal newMeal = new();
+            Meal newMeal= new();
+            newMeal.ActionType = true;
             ViewBag.ProductsList = _mealProductService.GetProductList();
             return PartialView("_AddEditMeal", newMeal);
         }
@@ -50,20 +45,19 @@ namespace HealthyTummy.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(MealProductsVM mealVM)
         {
-            Meal newMeal = new ();
-
+            Meal newMeal = new();
+            newMeal.ActionType = true;
             if (ModelState.IsValid)
             {
                 newMeal.Name = mealVM.Name;
-                newMeal.Calories= _mealProductService.CalculateMealCalories(mealVM.Products);
+                newMeal.Calories = _mealProductService.CalculateMealCalories(mealVM.Products);
                 _db.Meals.Add(newMeal);
                 _db.SaveChanges();
-
                 _mealProductService.AddMealProductsToDatabase(newMeal.Id, mealVM.Products);
-
                 CreateNotification("Meal saved!");
             }
-            ViewBag.ProductsList = _mealProductService.GetMealProductsList(newMeal.Id);
+            //now we need to refresh our site - with valid or invalid form
+            ViewBag.ProductsList = _mealProductService.GetProductList();
             return PartialView("_AddEditMeal", newMeal);
         }
         #endregion
@@ -77,28 +71,24 @@ namespace HealthyTummy.Controllers
             {
                 return NotFound();
             }
-            ViewBag.ProductsList = _mealProductService.GetProductsListWithAssignedProducts(id);
+            mealToEdit.ActionType = false;
+            ViewBag.ProductsList = _mealProductService.GetProductsListWithMealProductsChecked(id);
             return PartialView("_AddEditMeal", mealToEdit);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Meal editedMeal, string[] Products)
         {
-            Meal mealToEdit = _db.Meals.Find(editedMeal.Id);
-
             if (ModelState.IsValid)
             {
+                Meal mealToEdit = _db.Meals.Find(editedMeal.Id);
                 mealToEdit.Name = editedMeal.Name;
                 mealToEdit.Calories = _mealProductService.CalculateMealCalories(Products);
-
                 _db.SaveChanges();
-
                 _mealProductService.AddMealProductsToDatabase(editedMeal.Id, Products);
-
                 CreateNotification("Meal changed!");
             }
-
-            ViewBag.ProductsList = _mealProductService.GetMealProductsList(editedMeal.Id);
+            ViewBag.ProductsList = _mealProductService.GetProductsListWithMealProductsChecked(editedMeal.Id);
             return PartialView("_AddEditMeal", editedMeal);
         }
         #endregion
@@ -118,7 +108,6 @@ namespace HealthyTummy.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Delete(Meal mealToDelete)
         {
-            _mealProductService.RemoveMealProductsFromDb(mealToDelete.Id);
             _db.Meals.Remove(mealToDelete);
             CreateNotification("Meal deleted!");
             _db.SaveChanges();

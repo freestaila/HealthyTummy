@@ -1,0 +1,69 @@
+﻿@model IEnumerable<DietPlan>
+
+<table id="dietPlans"
+       class="table table-bordered w-auto"
+       style="table-layout: fixed; width:100%;"
+       data-url="@Url.Action("Index")">
+    <tbody>
+        @if (Model.Count() == 0)
+        {
+            <tr>
+                <td class="text-justify text-wrap">No diet plans added yet. Please add at least one to show.</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var dietPlan in Model)
+            {
+                <tr>
+                    <th class="font-weight-bold" colspan="3">@dietPlan.Name</th>
+                </tr>
+                <tr>
+                    <td colspan="3">Days List</td>
+                </tr>
+                @if (dietPlan.Days.Count() != 0)
+                {
+                    <tr>
+                        <td>Name</td>
+                        <td>Calories</td>
+                    </tr>
+
+                    @foreach (var day in dietPlan.Days)
+                    {
+                    <tr>
+                        <td>@day.Day.Name</td>
+                        <td>@day.Day.Calories</td>
+                    </tr> 
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3">
+                            <div class="row">
+                                <div class="col">
+                                    No days added to Diet Plan yet. Please add some.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+
+                    <tr>
+                        <td colspan="3">
+                            <div class="row">
+                                    <button type="button" class="btn btn-primary mx-auto" data-toggle="ajax-modal" data-target="#editDietPlan"
+                                            data-url="@Html.Raw(Url.Action("Edit", "DietPlan", new { id = dietPlan.Id }))">
+                                        Edit
+                                    </button>
+                                    <button type="button" class="btn btn-danger mx-auto" data-toggle="ajax-modal" data-target="#deleteDietPlan"
+                                            data-url="@Html.Raw(Url.Action("Delete", "DietPlan", new { id = dietPlan.Id }))">
+                                        Delete
+                                    </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+</table>

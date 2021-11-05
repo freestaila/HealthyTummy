@@ -1,9 +1,4 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-
-$(function () {
+﻿$(function () {
     var placeholderElement = $('#modal-placeholder');
 
     $(document).on('click', 'button[data-toggle="ajax-modal"]', function (event) {
@@ -22,13 +17,14 @@ $(function () {
         var dataToSend = new FormData(form.get(0));
 
         $.ajax({ url: actionUrl, method: 'post', data: dataToSend, processData: false, contentType: false }).done(function (data) {
-            var newBody = $('.modal-body', data);   
+            var newBody = $('.modal-body', data);
             placeholderElement.find('.modal-body').replaceWith(newBody);
             //choose correct table 
-            var isValid = newBody.find('[name="IsValid"]').val() === 'True';
+            var isValid = newBody.find('[name="IsValid"]').val() == 'True';
             if (actionUrl.includes("Delete")) {
                 isValid = "True";
             }
+            var tableName = actionUrl.split('/')[1];
             if (isValid) {
                 var notificationsPlaceholder = $('#notification');
                 var notificationsUrl = notificationsPlaceholder.data('url');
@@ -36,13 +32,20 @@ $(function () {
                     notificationsPlaceholder.html(notifications);
                 });
 
-                //to troche brzydko ale dziala 
-                var tableName = actionUrl.split('/')[1];
-                if (tableName == "Meal") {
-                    var tableElement = $('#meals');
-                }
-                else {
-                    var tableElement = $('#products');
+                //choose correct table to update
+                switch (tableName) {
+                    case "Meal":
+                        var tableElement = $('#meals');
+                        break;
+                    case "Product":
+                        var tableElement = $('#products');
+                        break;
+                    case "Day":
+                        var tableElement = $('#days');
+                        break;
+                    case "DietPlan":
+                        var tableElement = $('#dietPlans');
+                        break;
                 }
                 var tableUrl = tableElement.data('url');
                 $.get(tableUrl).done(function (table) {
@@ -50,6 +53,24 @@ $(function () {
                 });
                 placeholderElement.find('.modal').modal('hide');
             }
+            if (!isValid) {
+
+                switch (tableName) {
+                    case "Meal":
+                        $('#productsList').multiselect('rebuild');
+                        break;
+                    case "Day":
+                        $('#mealsList').multiselect('rebuild');
+                        break;
+                    case "DietPlan":
+                        $('#daysList').multiselect('rebuild');
+                        break;
+                }      
+            }
         });
     });
+});
+
+$(function () {
+    $('.bs-timepicker').timepicker();
 });
